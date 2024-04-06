@@ -28,9 +28,24 @@ torch.backends.cudnn.allow_tf32 = True # allow tf32 on cudnn
 checkpoint = torch.load(args.ckpt_path, map_location=device)
 
 # model
-gptconf = GPTConfig(**checkpoint['model_args'])
-model = nn.ModuleDict({'_orig_mod': GPT(gptconf)})
-model.load_state_dict(checkpoint['model'])
+# gptconf = GPTConfig(**checkpoint['model_args'])
+# model = nn.ModuleDict({'_orig_mod': GPT(gptconf)})
+# model.load_state_dict(checkpoint['model'])
+if not 'vocab_size' in checkpoint['model_args']:
+    # assume checkpoint for a large model
+
+    checkpoint['model_args']['stable_embedding'] = True
+    checkpoint['model_args']['vocab_size'] = 50257
+    checkpoint['model_args']['bias'] = True
+
+    gptconf = GPTConfig(**checkpoint['model_args'])
+    model = nn.ModuleDict({'_orig_mod': GPT(gptconf)})
+    model.load_state_dict(checkpoint['model'], strict=False)
+else:
+    gptconf = GPTConfig(**checkpoint['model_args'])
+    model = nn.ModuleDict({'_orig_mod': GPT(gptconf)})
+    model.load_state_dict(checkpoint['model'])
+    
 model.eval()
 model.to(device)
 model = model._orig_mod
