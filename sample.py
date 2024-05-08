@@ -63,7 +63,7 @@ for prompt in args.prompts:
     with torch.inference_mode():
         with torch.amp.autocast(device_type="cuda", dtype=torch.float16):
             #y = model.generate(x, args.steps, temperature=0.8, top_k=100)
-            y = model.generate(x, args.steps, temperature=1, top_k=1)
+            y = model.generate(x, args.steps, temperature=0.7, top_k=20)
 
     y = y[0].tolist()
     prefix, gen = y[:len(start)], y[len(start):]
